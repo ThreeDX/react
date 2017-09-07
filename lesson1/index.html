@@ -98,7 +98,76 @@
 
         displayInfo() {
             return `Имя: ${this.name}, Возраст: ${this.age}, Дата рождения: ${this.birth.toLocaleDateString()}`;
-        };
+        }
+    }
+
+    class Employee extends Human {
+        constructor(options) {
+            super(options);
+            const {salary, department} = options;
+            this.salary = salary;
+            this.department = department;
+
+        }
+
+        displayInfo() {
+            return `${super.displayInfo()}, Зарплата: ${this.salary}, Отдел: ${this.department}`;
+        }
+    }
+
+    class Manager extends Employee {
+        constructor(options) {
+            super(options);
+            this.devs = [];
+        }
+
+        addDeveloper(developer) {
+            if (!this.devs.includes(developer) && developer instanceof Developer) {
+                this.devs.push(developer);
+                return true;
+            } else
+                return false;
+        }
+
+        removeDeveloper(developer) {
+            const index = this.devs.indexOf(developer);
+            if (index != -1) {
+                this.devs.splice(index,1);
+                return true;
+            } else
+                return false;
+        }
+
+        displayInfo() {
+            const devs = this.devs.map(v => v.name).join(', ');
+            return `${super.displayInfo()}, Разработчики: ${devs}`;
+        }
+    }
+
+    class Developer extends Employee {
+        constructor(options) {
+            super(options);
+            const {manager} = options;
+            this.manager = null;
+            this.setManager(manager);
+        }
+
+        setManager(manager) {
+            if (manager === null || manager instanceof Manager) {
+                if (this.manager)
+                    this.manager.removeDeveloper(this);
+                if (manager)
+                    manager.addDeveloper(this);
+                this.manager = manager;
+                return true;
+            } else
+                return false;
+        }
+
+        displayInfo() {
+            const manager = this.manager ? this.manager.name : 'нет';
+            return `${super.displayInfo()}, Мэнеджер: ${manager}`;
+        }
     }
     document.writeln('\nЗдание 3, иерархия классов.\n');
 
@@ -109,6 +178,98 @@
     });
     console.log('human', hh);
     document.writeln(`Human: ${hh.displayInfo()}`);
+
+    const ee = new Employee({
+        name: 'Nina',
+        age: 18,
+        birth: '2009-11-21',
+        salary: 30000,
+        department: 'dev'
+    });
+    console.log('employee', ee);
+    document.writeln(`Employee: ${ee.displayInfo()}`);
+
+    const manager = new Manager({
+        name: 'Alexander',
+        age: 33,
+        birth: '2000-03-11',
+        salary: 50000,
+        department: 'Root'
+    });
+    const develop1 = new Developer({
+        name: 'Ivan',
+        age: 25,
+        birth: '2010-02-18',
+        salary: 40000,
+        department: 'Root',
+        manager: manager
+    });
+    const develop2 = new Developer({
+        name: 'Petr',
+        age: 28,
+        birth: '2007-10-04',
+        salary: 45000,
+        department: 'Root',
+        manager: manager
+    });
+    console.log('manager', manager);
+    document.writeln(`Manager: ${manager.displayInfo()}`);
+    console.log('Developer 1', develop1);
+    document.writeln(`Developer 1: ${develop1.displayInfo()}`);
+    console.log('Developer 2', develop2);
+    document.writeln(`Developer 2: ${develop2.displayInfo()}`);
+    develop2.setManager(null);
+    document.writeln('--- освобождаем второго разработчика ---');
+    console.log('manager', manager);
+    document.writeln(`Manager: ${manager.displayInfo()}`);
+    console.log('Developer 2', develop2);
+    document.writeln(`Developer 2: ${develop2.displayInfo()}`);
+
+    /**
+     * 4*. При помощи генератора написать функцию - анкету, которая запрашивает у пользователя на ввод
+     * параметры и передаёт их в генератор. В конце, когда генератор завершается, он должен вернуть все
+     * введённые входные параметры в виде объекта. Этот объект нужно вывести в консоли.
+     */
+    document.writeln('\nЗдание 4, генераторы.\n');
+
+    const clk = function() {
+        function* anketa()
+        {
+            const name = yield 'Укажите Ваше имя:';
+            const age = yield 'Укажите Ваш возраст:';
+            const birth = yield 'Укажите дату рождения в формате YYYY-MM-DD:';
+            return new Human({
+                name: name,
+                age: age,
+                birth: birth
+            });
+        }
+
+        function askQuestions(generator) {
+            let answer;
+            let result = generator.next();
+            while (!result.done) {
+                answer = prompt(result.value);
+                result = generator.next(answer);
+            }
+            return result.value;
+        }
+
+        const a = askQuestions(anketa());
+        console.log(a);
+        document.getElementById('z4').innerHTML = `Anketa: ${a.displayInfo()}`;
+    };
+    document.writeln('</pre><button onclick="clk()">Анкета</button><div id="z4"></div><pre>');
+
+    /**
+     * 5*. Написать цикл, который создаёт массив промисов, внутри каждого промиса происходит обращение
+     * к ресурсу (https://jsonplaceholder.typicode.com/users/number), где вместо number подставляется
+     * число от 1 до 10, в итоге должно получиться 10 промисов. Следует дождаться выполнения загрузки всеми
+     * промисами и далее вывести массив загруженных данных.
+     */
+
+    document.writeln('\nЗдание 5, промисы.\n');
+
 
 </script></pre>
 </body>
