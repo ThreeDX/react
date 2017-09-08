@@ -271,6 +271,7 @@
     document.writeln('\nЗдание 5, промисы.\n');
     document.writeln('</pre><div id="promise"></div><pre>');
 
+    // Реализация с XMLHttpRequest
     function runPromises() {
         let arr = [];
         let count = 10;
@@ -302,7 +303,30 @@
                 },
                 error => console.warn("Ошибка: " + error.message));
     }
-    runPromises();
+
+    // Альтернативная реализация функции с fetch
+    function runPromisesFetch() {
+        let arr = [];
+        let count = 10;
+        while(count-- > 0) {
+            arr[count] = fetch(`https://jsonplaceholder.typicode.com/users/${count + 1}`)
+                    .then(response => {
+                        if(response.ok) {
+                            return response.json();
+                        }
+                        throw new Error('Fetch error on "' + response.url + '", status = ' + response.status);
+                    });
+        }
+        Promise.all(arr)
+                .then(results => {
+                    console.log(results);
+                    document.getElementById('promise').innerHTML = results.map(v => `${v.id} - ${v.name}`).join('<br>');
+                },
+                error => console.warn("Ошибка: " + error.message));
+    }
+    //runPromises();
+    runPromisesFetch();
+
 </script></pre>
 </body>
 </html>
