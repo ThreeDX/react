@@ -269,8 +269,40 @@
      */
 
     document.writeln('\nЗдание 5, промисы.\n');
+    document.writeln('</pre><div id="promise"></div><pre>');
 
+    function runPromises() {
+        let arr = [];
+        let count = 10;
+        while(count-- > 0) {
+            arr[count] = new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', `https://jsonplaceholder.typicode.com/users/${count + 1}`, true);
+                xhr.onload = function() {
+                    if (this.status == 200) {
+                        resolve(this.response);
+                    } else {
+                        const error = new Error(this.statusText);
+                        error.code = this.status;
+                        reject(error);
+                    }
+                };
 
+                xhr.onerror = function() {
+                    reject(new Error("Network Error"));
+                };
+
+                xhr.send();
+            }).then(JSON.parse);
+        }
+        Promise.all(arr)
+                .then(results => {
+                    console.log(results);
+                    document.getElementById('promise').innerHTML = results.map(v => `${v.id} - ${v.name}`).join('<br>');
+                },
+                error => console.warn("Ошибка: " + error.message));
+    }
+    runPromises();
 </script></pre>
 </body>
 </html>
